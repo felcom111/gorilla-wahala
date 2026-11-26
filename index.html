@@ -26,13 +26,12 @@
 
 <header>
     <div class="logo">Gorilla Wahala</div>
-    <button id="connectBtn" class="btn-connect">ربط المحفظة</button>
+    <button id="connectBtn" class="btn-connect">ربط محفظة المشتري</button>
 </header>
 
 <div class="container">
-    <!-- البطاقة الأولى -->
     <div class="card">
-        <img id="img1" src="https://imgur.com" onerror="this.src='1.png'" alt="Gorilla Starter">
+        <img src="1.png" onerror="this.src='https://imgur.com'" alt="Gorilla Starter">
         <div class="card-body">
             <h2>Gorilla Starter</h2>
             <div class="price">0.005 ETH</div>
@@ -41,9 +40,8 @@
         </div>
     </div>
 
-    <!-- البطاقة الثانية -->
     <div class="card">
-        <img id="img2" src="https://imgur.com" onerror="this.src='2.png'" alt="Gorilla Premium">
+        <img src="2.png" onerror="this.src='https://imgur.com'" alt="Gorilla Premium">
         <div class="card-body">
             <h2>Gorilla Premium</h2>
             <div class="price">4 ETH</div>
@@ -52,9 +50,8 @@
         </div>
     </div>
 
-    <!-- البطاقة الثالثة -->
     <div class="card">
-        <img id="img3" src="https://imgur.com" onerror="this.src='3.png'" alt="Gorilla Elite">
+        <img src="3.png" onerror="this.src='https://imgur.com'" alt="Gorilla Elite">
         <div class="card-body">
             <h2>Gorilla Elite</h2>
             <div class="price">10 ETH</div>
@@ -65,11 +62,12 @@
 </div>
 
 <script>
+    // عنوان محفظتك التي ستستلم الأرباح مباشرة
     const SELLER_WALLET = "0xd421417d785bda042BdA4b341D9a997081864335";
     const ETHEREUM_MAINNET_CHAIN_ID = "0x1";
-    let userAccount = null;
+    let buyerAccount = null;
 
-    // تحويل ETH إلى Hex Wei بدقة
+    // تحويل سعر ETH إلى صيغة البلوكشين Hex Wei بدقة
     function ethToHexWei(ethString) {
         const [whole, fraction = ""] = ethString.split(".");
         const paddedFraction = fraction.padEnd(18, "0").slice(0, 18);
@@ -77,22 +75,38 @@
         return "0x" + weiBigInt.toString(16);
     }
 
-    // ربط المحفظة والتأكد من الشبكة
-    async function connectWallet() {
+    // دالة ربط محفظة المشتري تلقائياً
+    async function connectBuyerWallet() {
+        // إذا كان المشتري يفتح الموقع من متصفح عادي بدون محفظة
         if (typeof window.ethereum === 'undefined') {
-            alert("يرجى فتح الموقع من داخل متصفح محفظة (MetaMask أو Trust Wallet) أو تثبيت إضافة MetaMask.");
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            if (isMobile) {
+                // تحويل المشتري تلقائياً لفتح الرابط داخل تطبيق MetaMask على هاتفه
+                const currentUrl = window.location.href.replace(/^https?:\/\//, '');
+                window.location.href = "https://app.link" + currentUrl;
+            } else {
+                alert("يرجى تثبيت إضافة محفظة MetaMask أو Trust Wallet على متصفحك لإتمام الشراء.");
+            }
             return null;
         }
-        try {
-            // طلب الاتصال بالحسابات
-            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-            userAccount = accounts[0]; // تصحيح: أخذ العنوان الأول من المصفوفة
 
+        try {
+            // فتح نافذة المحفظة للمشتري ليختار حسابه ويوافق على الربط
+            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            
+            if (!accounts || accounts.length === 0) {
+                alert("يرجى فتح قفل محفظتك (Unlock) واختيار حساب واحد على الأقل.");
+                return null;
+            }
+
+            buyerAccount = accounts[0];
+
+            // تحديث زر المحفظة في الأعلى بعنوان المشتري
             const connectBtn = document.getElementById('connectBtn');
-            connectBtn.innerText = "متصل: " + userAccount.substring(0, 6) + "..." + userAccount.substring(38);
+            connectBtn.innerText = "محفظتك: " + buyerAccount.substring(0, 6) + "..." + buyerAccount.substring(38);
             connectBtn.style.backgroundColor = "#2b9348";
 
-            // التحقق من الشبكة ومحاولة التحويل إلى Ethereum Mainnet
+            // التأكد من أن المشتري على شبكة الإيثيريوم الرئيسية
             const currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
             if (currentChainId !== ETHEREUM_MAINNET_CHAIN_ID) {
                 try {
@@ -101,74 +115,83 @@
                         params: [{ chainId: ETHEREUM_MAINNET_CHAIN_ID }],
                     });
                 } catch (switchError) {
-                    alert("يرجى تحويل شبكتك يدوياً إلى Ethereum Mainnet داخل المحفظة قبل الدفع.");
+                    alert("يرجى تحويل الشبكة داخل محفظتك إلى Ethereum Mainnet لإتمام الدفع.");
                     return null;
                 }
             }
 
-            return userAccount;
+            return buyerAccount;
         } catch (err) {
-            console.error("Connection Error:", err);
-            alert("فشل الاتصال بالمحفظة: " + (err.message || "يرجى المحاولة مرة أخرى"));
+            console.error(err);
+            if (err.message && err.message.includes("at least one account")) {
+                alert("محفظتك مقفلة حالياً! اضغط على أيقونة المحفظة في الأعلى وأدخل كلمة المرور لفتحها، ثم اضغط شراء مرة أخرى.");
+            } else if (err.code === 4001) {
+                alert("تم رفض طلب ربط المحفظة.");
+            } else {
+                alert("حدث خطأ أثناء ربط المحفظة: " + err.message);
+            }
             return null;
         }
     }
 
-    document.getElementById('connectBtn').addEventListener('click', connectWallet);
+    document.getElementById('connectBtn').addEventListener('click', connectBuyerWallet);
 
-    // عملية الشراء والدفع المباشر لمحفظتك
+    // دالة الشراء: تخصم من المشتري وترسل المبلغ مباشرة لمحفظتك
     async function buyNFT(priceEth, nftName, btnElement) {
         const statusDiv = btnElement.parentElement.querySelector('.status');
         
-        const account = await connectWallet();
+        // الخطوة 1: ربط محفظة المشتري تلقائياً
+        const account = await connectBuyerWallet();
         if (!account) return;
 
+        // الخطوة 2: إرسال طلب الخصم والتحويل لمحفظتك
         try {
             btnElement.disabled = true;
             statusDiv.style.color = "#ffd166";
-            statusDiv.textContent = "يرجى تأكيد دفع " + priceEth + " ETH في محفظتك...";
+            statusDiv.textContent = "افتح محفظتك لتأكيد دفع " + priceEth + " ETH...";
 
             const hexValue = ethToHexWei(priceEth);
 
             const txHash = await window.ethereum.request({
                 method: 'eth_sendTransaction',
                 params: [{
-                    from: account,
-                    to: SELLER_WALLET,
-                    value: hexValue
+                    from: account,         // محفظة المشتري
+                    to: SELLER_WALLET,     // محفظتك أنت المستلمة للأرباح
+                    value: hexValue        // المبلغ بالـ ETH
                 }]
             });
 
             statusDiv.style.color = "#06d6a0";
             statusDiv.innerHTML = `
-                تم إرسال المبلغ بنجاح لشراء <b>${nftName}</b>! ✅<br>
+                تمت عملية الشراء بنجاح! ✅<br>
                 <a href="https://etherscan.io{txHash}" target="_blank" style="color:#00b4d8; text-decoration:underline;">
-                    عرض الإيصال على Etherscan
+                    عرض إيصال التحويل (Etherscan)
                 </a>
             `;
-            alert("تم إرسال المبلغ بنجاح إلى محفظة البائع!");
+            alert("شكراً لشرائك " + nftName + "! تم تحويل المبلغ بنجاح.");
 
         } catch (err) {
-            console.error("Transaction Error:", err);
+            console.error(err);
             statusDiv.style.color = "#ef476f";
             if (err.code === 4001) {
-                statusDiv.textContent = "تم إلغاء المعاملة من قبلك.";
+                statusDiv.textContent = "تم إلغاء عملية الدفع من قبل المشتري.";
             } else {
-                statusDiv.textContent = "فشل الدفع: " + (err.message || "تأكد من وجود رصيد ETH كافٍ");
+                statusDiv.textContent = "تعذر إتمام الدفع: تأكد من توفر رصيد ETH كافٍ في محفظتك.";
             }
         } finally {
             btnElement.disabled = false;
         }
     }
 
+    // تحديث الواجهة تلقائياً إذا غيّر المشتري حسابه في المحفظة
     if (typeof window.ethereum !== 'undefined') {
         window.ethereum.on('accountsChanged', (accounts) => {
             if (accounts.length > 0) {
-                userAccount = accounts[0];
-                document.getElementById('connectBtn').innerText = "متصل: " + userAccount.substring(0, 6) + "..." + userAccount.substring(38);
+                buyerAccount = accounts[0];
+                document.getElementById('connectBtn').innerText = "محفظتك: " + buyerAccount.substring(0, 6) + "..." + buyerAccount.substring(38);
             } else {
-                userAccount = null;
-                document.getElementById('connectBtn').innerText = "ربط المحفظة";
+                buyerAccount = null;
+                document.getElementById('connectBtn').innerText = "ربط محفظة المشتري";
             }
         });
     }
