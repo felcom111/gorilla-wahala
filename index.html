@@ -32,7 +32,7 @@
 
 <div class="container">
     <div class="card">
-        <img src="1.png" onerror="this.src='https://imgur.com'" alt="Gorilla Starter">
+        <img src="111.png" onerror="this.src='https://imgur.com'" alt="Gorilla Starter">
         <div class="card-body">
             <h2>Gorilla Starter #01</h2>
             <div class="price">0.005 ETH</div>
@@ -42,7 +42,7 @@
     </div>
 
     <div class="card">
-        <img src="2.png" onerror="this.src='https://imgur.com'" alt="Gorilla Premium">
+        <img src="22.png" onerror="this.src='https://imgur.com'" alt="Gorilla Premium">
         <div class="card-body">
             <h2>Gorilla Premium #02</h2>
             <div class="price">4 ETH</div>
@@ -52,7 +52,7 @@
     </div>
 
     <div class="card">
-        <img src="3.png" onerror="this.src='https://imgur.com'" alt="Gorilla Elite">
+        <img src="33.png" onerror="this.src='https://imgur.com'" alt="Gorilla Elite">
         <div class="card-body">
             <h2>Gorilla Elite #03</h2>
             <div class="price">10 ETH</div>
@@ -67,7 +67,6 @@
     const ETHEREUM_MAINNET_CHAIN_ID = "0x1";
     let buyerAccount = null;
 
-    // تحويل ETH إلى Hex Wei
     function ethToHexWei(ethString) {
         const [whole, fraction = ""] = ethString.split(".");
         const paddedFraction = fraction.padEnd(18, "0").slice(0, 18);
@@ -75,7 +74,6 @@
         return "0x" + weiBigInt.toString(16);
     }
 
-    // تحويل نص تفاصيل الـ NFT إلى Hex لتسجيله في البلوكشين والمحفظة
     function textToHex(str) {
         const encoder = new TextEncoder();
         const bytes = encoder.encode(str);
@@ -101,7 +99,9 @@
                 return null;
             }
 
-            buyerAccount = accounts;
+            // تم الإصلاح: أخذ العنوان الأول من المصفوفة [0]
+            buyerAccount = accounts[0];
+
             const connectBtn = document.getElementById('connectBtn');
             connectBtn.innerText = "محفظتك: " + buyerAccount.substring(0, 6) + "..." + buyerAccount.substring(38);
             connectBtn.style.backgroundColor = "#2b9348";
@@ -120,7 +120,8 @@
             }
             return buyerAccount;
         } catch (err) {
-            alert("يرجى فتح قفل المحفظة والموافقة على الاتصال.");
+            console.error(err);
+            alert("تعذر الاتصال بالمحفظة: " + (err.message || "يرجى فتح قفل المحفظة والموافقة."));
             return null;
         }
     }
@@ -138,7 +139,6 @@
             statusDiv.textContent = "افتح محفظتك لتأكيد شراء " + nftName + "...";
 
             const hexValue = ethToHexWei(priceEth);
-            // تسجيل وصف الشراء داخل بيانات المعاملة على البلوكشين
             const nftMemo = `NFT Purchase: ${nftName} | Collection: Gorilla Wahala | Price: ${priceEth} ETH`;
             const hexData = textToHex(nftMemo);
 
@@ -148,7 +148,7 @@
                     from: account,
                     to: SELLER_WALLET,
                     value: hexValue,
-                    data: hexData // تظهر في المحفظة وعلى Etherscan كبيانات شراء NFT
+                    data: hexData
                 }]
             });
 
@@ -169,7 +169,7 @@
             if (err.code === 4001) {
                 statusDiv.textContent = "تم إلغاء عملية الشراء من قبلك.";
             } else {
-                statusDiv.textContent = "تعذر إتمام الشراء: تأكد من توفر رصيد ETH كافٍ.";
+                statusDiv.textContent = "تعذر إتمام الشراء: " + (err.message || "تأكد من توفر رصيد ETH كافٍ.");
             }
         } finally {
             btnElement.disabled = false;
