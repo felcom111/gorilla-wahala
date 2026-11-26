@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gorilla Wahala - NFT Market</title>
+    <title>Gorilla Wahala - Official NFT Mint</title>
     <style>
         * { box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background-color: #0f0f1a; color: white; text-align: center; padding-top: 80px; }
@@ -20,7 +20,8 @@
         .btn-buy { background: linear-gradient(45deg, #7b2cbf, #00b4d8); width: 100%; padding: 15px; border: none; border-radius: 8px; color: white; cursor: pointer; font-weight: bold; font-size: 1rem; transition: 0.3s; }
         .btn-buy:disabled { opacity: 0.6; cursor: not-allowed; }
         .status { margin-top: 12px; color: #ccc; font-size: 0.9rem; min-height: 24px; line-height: 1.6; }
-        .receipt-box { background: #122620; border: 1px solid #06d6a0; border-radius: 8px; padding: 10px; margin-top: 10px; font-size: 0.85rem; text-align: right; }
+        .receipt-box { background: #122620; border: 1px solid #06d6a0; border-radius: 8px; padding: 12px; margin-top: 12px; font-size: 0.85rem; text-align: right; word-break: break-word; }
+        .badge-confirmed { display: inline-block; background: #06d6a0; color: #0f0f1a; padding: 3px 8px; border-radius: 4px; font-weight: bold; margin-bottom: 6px; }
     </style>
 </head>
 <body>
@@ -31,39 +32,42 @@
 </header>
 
 <div class="container">
+    <!-- Token ID 0 -->
     <div class="card">
-        <img src="111.png" onerror="this.src='https://imgur.com'" alt="Gorilla Starter">
+        <img src="1.png" onerror="this.src='https://imgur.com'" alt="Gorilla Starter">
         <div class="card-body">
             <h2>Gorilla Starter #01</h2>
             <div class="price">0.005 ETH</div>
-            <button class="btn-buy" onclick="buyNFT('0.005', 'Gorilla Starter #01', this)">شراء NFT الآن</button>
+            <button class="btn-buy" onclick="mintNFT(0, '0.005', 'Gorilla Starter #01', this)">شراء واستلام NFT فوراً</button>
             <div class="status"></div>
         </div>
     </div>
 
+    <!-- Token ID 1 -->
     <div class="card">
-        <img src="22.png" onerror="this.src='https://imgur.com'" alt="Gorilla Premium">
+        <img src="2.png" onerror="this.src='https://imgur.com'" alt="Gorilla Premium">
         <div class="card-body">
             <h2>Gorilla Premium #02</h2>
             <div class="price">4 ETH</div>
-            <button class="btn-buy" onclick="buyNFT('4', 'Gorilla Premium #02', this)">شراء NFT الآن</button>
+            <button class="btn-buy" onclick="mintNFT(1, '4', 'Gorilla Premium #02', this)">شراء واستلام NFT فوراً</button>
             <div class="status"></div>
         </div>
     </div>
 
+    <!-- Token ID 2 -->
     <div class="card">
-        <img src="33.png" onerror="this.src='https://imgur.com'" alt="Gorilla Elite">
+        <img src="3.png" onerror="this.src='https://imgur.com'" alt="Gorilla Elite">
         <div class="card-body">
             <h2>Gorilla Elite #03</h2>
             <div class="price">10 ETH</div>
-            <button class="btn-buy" onclick="buyNFT('10', 'Gorilla Elite #03', this)">شراء NFT الآن</button>
+            <button class="btn-buy" onclick="mintNFT(2, '10', 'Gorilla Elite #03', this)">شراء واستلام NFT فوراً</button>
             <div class="status"></div>
         </div>
     </div>
 </div>
 
 <script>
-    const SELLER_WALLET = "0xd421417d785bda042BdA4b341D9a997081864335";
+    const NFT_CONTRACT_ADDRESS = "0x2A0D651e94F5b37E486E4bb4E654C1Bf9e1D4a33";
     const ETHEREUM_MAINNET_CHAIN_ID = "0x1";
     let buyerAccount = null;
 
@@ -74,10 +78,12 @@
         return "0x" + weiBigInt.toString(16);
     }
 
-    function textToHex(str) {
-        const encoder = new TextEncoder();
-        const bytes = encoder.encode(str);
-        return "0x" + Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+    function encodeClaimCall(receiverAddress, tokenId, quantity) {
+        const selector = "57bc3d78";
+        const cleanAddr = receiverAddress.toLowerCase().replace("0x", "").padStart(64, "0");
+        const hexTokenId = BigInt(tokenId).toString(16).padStart(64, "0");
+        const hexQuantity = BigInt(quantity).toString(16).padStart(64, "0");
+        return "0x" + selector + cleanAddr + hexTokenId + hexQuantity;
     }
 
     async function connectBuyerWallet() {
@@ -87,7 +93,7 @@
                 const currentUrl = window.location.href.replace(/^https?:\/\//, '');
                 window.location.href = "https://app.link" + currentUrl;
             } else {
-                alert("يرجى تثبيت إضافة محفظة MetaMask أو Trust Wallet لإتمام الشراء.");
+                alert("يرجى تثبيت إضافة محفظة MetaMask أو Trust Wallet على متصفحك لإتمام الشراء.");
             }
             return null;
         }
@@ -99,8 +105,7 @@
                 return null;
             }
 
-            // تم الإصلاح: أخذ العنوان الأول من المصفوفة [0]
-            buyerAccount = accounts[0];
+            buyerAccount = accounts;
 
             const connectBtn = document.getElementById('connectBtn');
             connectBtn.innerText = "محفظتك: " + buyerAccount.substring(0, 6) + "..." + buyerAccount.substring(38);
@@ -121,14 +126,54 @@
             return buyerAccount;
         } catch (err) {
             console.error(err);
-            alert("تعذر الاتصال بالمحفظة: " + (err.message || "يرجى فتح قفل المحفظة والموافقة."));
+            alert("يرجى فتح قفل المحفظة والموافقة على الاتصال.");
             return null;
         }
     }
 
     document.getElementById('connectBtn').addEventListener('click', connectBuyerWallet);
 
-    async function buyNFT(priceEth, nftName, btnElement) {
+    async function waitForMintConfirmation(txHash, statusDiv, nftName, priceEth) {
+        statusDiv.style.color = "#00b4d8";
+        statusDiv.innerHTML = `⏳ جاري تسجيل الـ NFT على بلوكشين الإيثيريوم وتحويله لمحفظتك...<br><small>Tx: ${txHash.substring(0, 14)}...</small>`;
+
+        const checkInterval = setInterval(async () => {
+            try {
+                const receipt = await window.ethereum.request({
+                    method: 'eth_getTransactionReceipt',
+                    params: [txHash],
+                });
+
+                if (receipt && receipt.blockNumber) {
+                    clearInterval(checkInterval);
+                    const blockNum = parseInt(receipt.blockNumber, 16);
+
+                    if (receipt.status === "0x1") {
+                        statusDiv.style.color = "#06d6a0";
+                        statusDiv.innerHTML = `
+                            <div class="receipt-box">
+                                <span class="badge-confirmed">✔ تم الشراء ونقل الـ NFT لمحفظتك (Block #${blockNum})</span><br>
+                                • <b>القطعة المشتراة:</b> ${nftName}<br>
+                                • <b>المبلغ المدفوع:</b> ${priceEth} ETH<br>
+                                • ستظهر الصورة الآن في تبويب <b>NFTs</b> داخل محفظتك.<br>
+                                • <a href="https://etherscan.io{txHash}" target="_blank" style="color:#00b4d8; text-decoration:underline; font-weight:bold;">
+                                    عرض إثبات ملكية الـ NFT على Etherscan ↗
+                                  </a>
+                            </div>
+                        `;
+                        alert(`تهانينا! تم شراء (${nftName}) وتحويل الصورة إلى محفظتك تلقائياً.`);
+                    } else {
+                        statusDiv.style.color = "#ef476f";
+                        statusDiv.textContent = "فشلت المعاملة على الشبكة: تأكد من تفعيل مرحلة البيع (Claim Conditions) والكمية في العقد.";
+                    }
+                }
+            } catch (e) {
+                console.error("Error checking receipt:", e);
+            }
+        }, 3000);
+    }
+
+    async function mintNFT(tokenId, priceEth, nftName, btnElement) {
         const statusDiv = btnElement.parentElement.querySelector('.status');
         const account = await connectBuyerWallet();
         if (!account) return;
@@ -136,46 +181,32 @@
         try {
             btnElement.disabled = true;
             statusDiv.style.color = "#ffd166";
-            statusDiv.textContent = "افتح محفظتك لتأكيد شراء " + nftName + "...";
+            statusDiv.textContent = "افتح محفظتك لتأكيد شراء واستلام " + nftName + "...";
 
             const hexValue = ethToHexWei(priceEth);
-            const nftMemo = `NFT Purchase: ${nftName} | Collection: Gorilla Wahala | Price: ${priceEth} ETH`;
-            const hexData = textToHex(nftMemo);
+            const callData = encodeClaimCall(account, tokenId, 1);
 
             const txHash = await window.ethereum.request({
                 method: 'eth_sendTransaction',
                 params: [{
                     from: account,
-                    to: SELLER_WALLET,
+                    to: NFT_CONTRACT_ADDRESS,
                     value: hexValue,
-                    data: hexData
+                    data: callData
                 }]
             });
 
-            statusDiv.style.color = "#06d6a0";
-            statusDiv.innerHTML = `
-                <div class="receipt-box">
-                    ✅ <b>تم تسجيل شراء NFT على البلوكشين!</b><br>
-                    • القطعة: ${nftName}<br>
-                    • المبلغ المدفوع: ${priceEth} ETH<br>
-                    • <a href="https://etherscan.io{txHash}" target="_blank" style="color:#00b4d8; text-decoration:underline;">عرض إثبات الشراء على Etherscan</a>
-                </div>
-            `;
-            alert("مبروك! تم تسجيل عملية شراء " + nftName + " بنجاح على البلوكشين.");
+            await waitForMintConfirmation(txHash, statusDiv, nftName, priceEth);
 
         } catch (err) {
             console.error(err);
             statusDiv.style.color = "#ef476f";
-            if (err.code === 4001) {
-                statusDiv.textContent = "تم إلغاء عملية الشراء من قبلك.";
-            } else {
-                statusDiv.textContent = "تعذر إتمام الشراء: " + (err.message || "تأكد من توفر رصيد ETH كافٍ.");
-            }
-        } finally {
-            btnElement.disabled = false;
-        }
-    }
-</script>
-
-</body>
-</html>
+if (err.code === 4001) {
+statusDiv.textContent = "تم إلغاء عملية الشراء من قبلك.";
+} else {
+statusDiv.textContent = "تعذر إتمام الشراء: تأكد من توفر رصيد ETH كافٍ وتفعيل السعر في Thirdweb.";
+}
+} finally {
+btnElement.disabled = false;
+}
+}
