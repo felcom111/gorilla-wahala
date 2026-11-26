@@ -157,7 +157,7 @@
                                 • <b>المبلغ المدفوع:</b> ${priceEth} ETH<br>
                                 • ستظهر الصورة الآن في تبويب <b>NFTs</b> داخل محفظتك.<br>
                                 • <a href="https://etherscan.io{txHash}" target="_blank" style="color:#00b4d8; text-decoration:underline; font-weight:bold;">
-                                    عرض إثبات ملكية الـ NFT على Etherscan ↗
+                                    عرض إثبات ملكية الـ NFT على [Etherscan](https://etherscan.io "Etherscan Ethereum Blockchain Explorer") ↗
                                   </a>
                             </div>
                         `;
@@ -202,8 +202,11 @@
             console.error(err);
             statusDiv.style.color = "#ef476f";
             if (err.code === 4001) {
-                statusDiv.textContent = "تم إلغاء عملية الشراء من قبلك.";
-            } else {
+            }
+        } finally {
+            btnElement.disabled = false;
+        }
+    }
 </script>
 
 </body>
