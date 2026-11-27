@@ -11,15 +11,19 @@
         .logo { font-size: 1.5rem; font-weight: bold; color: #00b4d8; }
         .btn-connect { background-color: #7b2cbf; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
         .btn-connect:hover { background-color: #9d4edd; }
-        .container { max-width: 1200px; margin: 40px auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; padding: 20px; }
+        .hero { max-width: 700px; margin: 20px auto 0; padding: 0 20px; }
+        .hero h1 { color: #00b4d8; margin-bottom: 10px; }
+        .hero p { color: #ccc; font-size: 1.05rem; line-height: 1.6; }
+        .container { max-width: 1100px; margin: 30px auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; padding: 20px; }
         .card { background-color: #1a1a2e; border-radius: 15px; border: 1px solid #333; overflow: hidden; transition: transform 0.3s; }
         .card:hover { transform: translateY(-5px); border-color: #7b2cbf; }
-        .card img { width: 100%; height: 320px; object-fit: cover; background-color: #252542; display: block; }
-        .card-body { padding: 20px; }
-        .price { font-size: 1.3rem; color: #00b4d8; margin: 10px 0 20px; font-weight: bold; }
-        .btn-buy { background: linear-gradient(45deg, #7b2cbf, #00b4d8); width: 100%; padding: 15px; border: none; border-radius: 8px; color: white; cursor: pointer; font-weight: bold; font-size: 1rem; transition: 0.3s; }
+        .card img { width: 100%; height: 300px; object-fit: cover; background-color: #252542; display: block; }
+        .card-body { padding: 15px; }
+        .mint-box { max-width: 500px; margin: 10px auto 60px; background-color: #1a1a2e; border: 2px solid #7b2cbf; border-radius: 15px; padding: 25px; }
+        .price { font-size: 1.5rem; color: #00b4d8; margin: 10px 0 20px; font-weight: bold; }
+        .btn-buy { background: linear-gradient(45deg, #7b2cbf, #00b4d8); width: 100%; padding: 16px; border: none; border-radius: 8px; color: white; cursor: pointer; font-weight: bold; font-size: 1.1rem; transition: 0.3s; }
         .btn-buy:disabled { opacity: 0.6; cursor: not-allowed; }
-        .status { margin-top: 12px; color: #ccc; font-size: 0.9rem; min-height: 24px; line-height: 1.6; }
+        .status { margin-top: 15px; color: #ccc; font-size: 0.95rem; min-height: 24px; line-height: 1.6; }
         .receipt-box { background: #122620; border: 1px solid #06d6a0; border-radius: 8px; padding: 12px; margin-top: 12px; font-size: 0.85rem; text-align: right; word-break: break-word; }
         .badge-confirmed { display: inline-block; background: #06d6a0; color: #0f0f1a; padding: 3px 8px; border-radius: 4px; font-weight: bold; margin-bottom: 6px; }
     </style>
@@ -31,43 +35,35 @@
     <button id="connectBtn" class="btn-connect">ربط محفظة المشتري</button>
 </header>
 
+<div class="hero">
+    <h1>مجموعة Gorilla Wahala الحصرية</h1>
+    <p>احصل على نسختك الفريدة (1 of 1) مباشرة في محفظتك وعلى شبكة الإيثيريوم.</p>
+</div>
+
 <div class="container">
-    <!-- Token ID 0 -->
     <div class="card">
         <img src="./111.png" alt="Gorilla Starter #01">
-        <div class="card-body">
-            <h2>Gorilla Starter #01</h2>
-            <div class="price">0.005 ETH</div>
-            <button class="btn-buy" onclick="mintNFT(0, '0.005', 'Gorilla Starter #01', this)">شراء واستلام NFT فوراً</button>
-            <div class="status"></div>
-        </div>
+        <div class="card-body"><h3>Gorilla Starter #01</h3></div>
     </div>
-
-    <!-- Token ID 1 -->
     <div class="card">
         <img src="./22.png" alt="Gorilla Premium #02">
-        <div class="card-body">
-            <h2>Gorilla Premium #02</h2>
-            <div class="price">4 ETH</div>
-            <button class="btn-buy" onclick="mintNFT(1, '4', 'Gorilla Premium #02', this)">شراء واستلام NFT فوراً</button>
-            <div class="status"></div>
-        </div>
+        <div class="card-body"><h3>Gorilla Premium #02</h3></div>
     </div>
-
-    <!-- Token ID 2 -->
     <div class="card">
         <img src="./33.png" alt="Gorilla Elite #03">
-        <div class="card-body">
-            <h2>Gorilla Elite #03</h2>
-            <div class="price">10 ETH</div>
-            <button class="btn-buy" onclick="mintNFT(2, '10', 'Gorilla Elite #03', this)">شراء واستلام NFT فوراً</button>
-            <div class="status"></div>
-        </div>
+        <div class="card-body"><h3>Gorilla Elite #03</h3></div>
     </div>
 </div>
 
+<div class="mint-box">
+    <h2>سك وشراء NFT الآن (Mint)</h2>
+    <div class="price">4 ETH</div>
+    <button id="mintBtn" class="btn-buy" onclick="mintERC721Drop('4', this)">شراء واستلام NFT في محفظتك فوراً</button>
+    <div id="statusDiv" class="status"></div>
+</div>
+
 <script>
-    const NFT_CONTRACT_ADDRESS = "0x2A0D651e94F5b37E486E4bb4E654C1Bf9e1D4a33";
+    const NFT_CONTRACT_ADDRESS = "0x885c06d7A090189182B0200b835F4D7717090FDa";
     const ETHEREUM_MAINNET_CHAIN_ID = "0x1";
     let buyerAccount = null;
 
@@ -78,12 +74,24 @@
         return "0x" + weiBigInt.toString(16);
     }
 
-    function encodeClaimCall(receiverAddress, tokenId, quantity) {
-        const selector = "57bc3d78";
-        const cleanAddr = receiverAddress.toLowerCase().replace("0x", "").padStart(64, "0");
-        const hexTokenId = BigInt(tokenId).toString(16).padStart(64, "0");
-        const hexQuantity = BigInt(quantity).toString(16).padStart(64, "0");
-        return "0x" + selector + cleanAddr + hexTokenId + hexQuantity;
+    function encodeERC721ClaimCall(receiverAddress, quantity, priceWeiHex) {
+        const selector = "84bb1e42";
+        const receiver = receiverAddress.toLowerCase().replace("0x", "").padStart(64, "0");
+        const qty = BigInt(quantity).toString(16).padStart(64, "0");
+        const currency = "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee".padStart(64, "0");
+        const price = priceWeiHex.replace("0x", "").padStart(64, "0");
+        const proofOffset = (192).toString(16).padStart(64, "0");
+        const dataOffset = (320).toString(16).padStart(64, "0");
+        
+        const proofArrayOffset = (128).toString(16).padStart(64, "0");
+        const maxQtyInProof = (0).toString(16).padStart(64, "0");
+        const priceInProof = priceWeiHex.replace("0x", "").padStart(64, "0");
+        const currencyInProof = currency;
+        const proofArrayLength = (0).toString(16).padStart(64, "0");
+        const dataLength = (0).toString(16).padStart(64, "0");
+
+        return "0x" + selector + receiver + qty + currency + price + proofOffset + dataOffset +
+               proofArrayOffset + maxQtyInProof + priceInProof + currencyInProof + proofArrayLength + dataLength;
     }
 
     async function connectBuyerWallet() {
@@ -93,7 +101,7 @@
                 const currentUrl = window.location.href.replace(/^https?:\/\//, '');
                 window.location.href = "https://app.link" + currentUrl;
             } else {
-                alert("يرجى تثبيت إضافة محفظة MetaMask أو Trust Wallet على متصفحك لإتمام الشراء.");
+                alert("يرجى تثبيت إضافة محفظة MetaMask أو Trust Wallet لإتمام الشراء.");
             }
             return null;
         }
@@ -133,7 +141,7 @@
 
     document.getElementById('connectBtn').addEventListener('click', connectBuyerWallet);
 
-    async function waitForMintConfirmation(txHash, statusDiv, nftName, priceEth) {
+    async function waitForMintConfirmation(txHash, statusDiv, priceEth) {
         statusDiv.style.color = "#00b4d8";
         statusDiv.innerHTML = `⏳ جاري تسجيل الـ NFT على بلوكشين الإيثيريوم وتحويله لمحفظتك...<br><small>Tx: ${txHash.substring(0, 14)}...</small>`;
 
@@ -153,18 +161,18 @@
                         statusDiv.innerHTML = `
                             <div class="receipt-box">
                                 <span class="badge-confirmed">✔ تم الشراء ونقل الـ NFT لمحفظتك (Block #${blockNum})</span><br>
-                                • <b>القطعة المشتراة:</b> ${nftName}<br>
+                                • <b>المجموعة:</b> Gorilla Wahala NFT<br>
                                 • <b>المبلغ المدفوع:</b> ${priceEth} ETH<br>
                                 • ستظهر الصورة الآن في تبويب <b>NFTs</b> داخل محفظتك.<br>
                                 • <a href="https://etherscan.io{txHash}" target="_blank" style="color:#00b4d8; text-decoration:underline; font-weight:bold;">
-                                    عرض إثبات ملكية الـ NFT على [Etherscan](https://etherscan.io "Etherscan Ethereum Blockchain Explorer") ↗
+                                    عرض إثبات ملكية الـ NFT على Etherscan ↗
                                   </a>
                             </div>
                         `;
-                        alert(`تهانينا! تم شراء (${nftName}) وتحويل الصورة إلى محفظتك تلقائياً.`);
+                        alert("تهانينا! تم شراء الـ NFT وتحويل الصورة إلى محفظتك تلقائياً.");
                     } else {
                         statusDiv.style.color = "#ef476f";
-                        statusDiv.textContent = "فشلت المعاملة على الشبكة: تأكد من تفعيل مرحلة البيع (Claim Conditions) والكمية في العقد.";
+                        statusDiv.textContent = "فشلت المعاملة على الشبكة.";
                     }
                 }
             } catch (e) {
@@ -173,18 +181,19 @@
         }, 3000);
     }
 
-    async function mintNFT(tokenId, priceEth, nftName, btnElement) {
-        const statusDiv = btnElement.parentElement.querySelector('.status');
+    async function mintERC721Drop(priceEth, btnElement) {
+        const statusDiv = document.getElementById('statusDiv');
         const account = await connectBuyerWallet();
         if (!account) return;
 
         try {
             btnElement.disabled = true;
             statusDiv.style.color = "#ffd166";
-            statusDiv.textContent = "افتح محفظتك لتأكيد شراء واستلام " + nftName + "...";
+            statusDiv.textContent = "افتح محفظتك لتأكيد شراء واستلام الـ NFT...";
 
             const hexValue = ethToHexWei(priceEth);
-            const callData = encodeClaimCall(account, tokenId, 1);
+
+            const callData = encodeERC721ClaimCall(account, 1, hexValue);
 
             const txHash = await window.ethereum.request({
                 method: 'eth_sendTransaction',
@@ -196,12 +205,15 @@
                 }]
             });
 
-            await waitForMintConfirmation(txHash, statusDiv, nftName, priceEth);
+            await waitForMintConfirmation(txHash, statusDiv, priceEth);
 
         } catch (err) {
             console.error(err);
             statusDiv.style.color = "#ef476f";
             if (err.code === 4001) {
+                statusDiv.textContent = "تم إلغاء عملية الشراء من قبلك.";
+            } else {
+                statusDiv.textContent = "تعذر إتمام الشراء: تأكد من توفر رصيد 4 ETH كافٍ في محفظتك.";
             }
         } finally {
             btnElement.disabled = false;
