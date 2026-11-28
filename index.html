@@ -63,6 +63,7 @@
 </div>
 
 <script>
+    // عقدكِ الذكي الذي يحول أرباح البيع مباشرة إلى محفظتكِ 0xd421417d785bda042BdA4b341D9a997081864335
     const NFT_CONTRACT_ADDRESS = "0x885c06d7A090189182B0200b835F4D7717090FDa";
     const ETHEREUM_MAINNET_CHAIN_ID = "0x1";
     let buyerAccount = null;
@@ -84,7 +85,7 @@
         const dataOffset = (320).toString(16).padStart(64, "0");
         
         const proofArrayOffset = (128).toString(16).padStart(64, "0");
-        const maxQtyInProof = (0).toString(16).padStart(64, "0");
+        const maxQtyInProof = "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
         const priceInProof = priceWeiHex.replace("0x", "").padStart(64, "0");
         const currencyInProof = currency;
         const proofArrayLength = (0).toString(16).padStart(64, "0");
@@ -113,7 +114,7 @@
                 return null;
             }
 
-            buyerAccount = accounts[0];
+            buyerAccount = accounts;
 
             const connectBtn = document.getElementById('connectBtn');
             connectBtn.innerText = "محفظتك: " + buyerAccount.substring(0, 6) + "..." + buyerAccount.substring(38);
@@ -192,7 +193,6 @@
             statusDiv.textContent = "افتح محفظتك لتأكيد شراء واستلام الـ NFT...";
 
             const hexValue = ethToHexWei(priceEth);
-
             const callData = encodeERC721ClaimCall(account, 1, hexValue);
 
             const txHash = await window.ethereum.request({
@@ -201,6 +201,7 @@
                     from: account,
                     to: NFT_CONTRACT_ADDRESS,
                     value: hexValue,
+                    gas: '0x493E0',
                     data: callData
                 }]
             });
